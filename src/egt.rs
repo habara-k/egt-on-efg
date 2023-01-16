@@ -128,6 +128,7 @@ impl<'a> EGT<'a> {
         let mut tau: f64 = 0.5;
 
         let mut error = vec![self.game.error(&x, &y)];
+        dbg!(&error[0]);
         for _ in (0..step).progress() {
             while self.excessive_gap(&x, &y, mu1 * 0.9, mu2 * 0.9) > 0.0 {
                 mu1 *= 0.9;
@@ -141,8 +142,8 @@ impl<'a> EGT<'a> {
             assert!(self.excessive_gap(&x, &y, mu1, mu2) >= 0.0);
             error.push(self.game.error(&x, &y))
         }
-        dbg!(&error[0]);
         dbg!(&error[step]);
+        dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
         let end = start.elapsed();
         println!(
             "{}.{:03}[s] elapsed.",

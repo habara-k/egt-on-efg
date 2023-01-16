@@ -53,6 +53,7 @@ pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
     let mut sum_py = py.clone();
 
     let mut error = vec![game.error(&px, &py)];
+    dbg!(&error[0]);
     for k in 1..(steps + 1) {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         accumulate(&game.sp2, &y, game.mat_a_t.dot(&px), &mut regret_y);
@@ -64,8 +65,8 @@ pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
         sum_py.add_assign(&py);
         error.push(game.error(&sum_px, &sum_py) / (k + 1) as f64);
     }
-    dbg!(&error[0]);
     dbg!(&error[steps]);
+    dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
     let end = start.elapsed();
     println!(
         "{}.{:03}[s] elapsed.",
@@ -91,6 +92,7 @@ pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64
     let mut sum_py = py.clone();
 
     let mut error = vec![game.error(&px, &py)];
+    dbg!(&error[0]);
     for k in 1..(steps + 1) {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         regret_x.mapv_inplace(|v| v.max(0.0));
@@ -107,8 +109,8 @@ pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64
         let weight = (k + 1) as f64 * (k + 2) as f64 / 2.0;
         error.push(game.error(&sum_px, &sum_py) / weight);
     }
-    dbg!(&error[0]);
     dbg!(&error[steps]);
+    dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
     let end = start.elapsed();
     println!(
         "{}.{:03}[s] elapsed.",

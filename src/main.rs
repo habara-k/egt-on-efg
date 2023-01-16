@@ -1,10 +1,11 @@
 extern crate blas_src;
 
-use solver::cfr::{cfr, cfr_plus};
-use solver::egt::EGT;
-use solver::game::Game;
+use egt_on_efg::cfr::{cfr, cfr_plus};
+use egt_on_efg::egt::EGT;
+use egt_on_efg::game::Game;
 
 use argh::FromArgs;
+
 #[derive(FromArgs)]
 /// Config
 struct Config {
@@ -39,13 +40,12 @@ fn main() {
         let (x, y, _) = egt.run(cfg.steps / 10);
         let mut egt = EGT::new(&game, "centering");
         egt.set_center(x, y);
-        let (x, y, _) = egt.run(cfg.steps * 9 / 10);
+        egt.run(cfg.steps * 9 / 10);
     }
     if cfg.method == "mix" {
-        let egt = EGT::new(&game, "normal");
         let (x, y, _) = cfr_plus(&game, cfg.steps / 10);
         let mut egt = EGT::new(&game, "centering");
         egt.set_center(x, y);
-        let (x, y, _) = egt.run(cfg.steps * 9 / 10);
+        egt.run(cfg.steps * 9 / 10);
     }
 }
