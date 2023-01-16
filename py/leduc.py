@@ -117,7 +117,7 @@ class LeducHoldem(GameState[Action, Obs]):
     def obs(self, player: Player) -> Obs:
         assert player is not Player.C
         hole_card = self.history[0][player]
-        return str((hole_card, self.history[1:]))
+        return ",".join([hole_card, *self.history[1:]])
 
     def payoff(self) -> float:
         assert self.player() is None

@@ -101,30 +101,36 @@ class GameBuilder(Generic[A, O]):
 def build(state: GameState[A, O]) -> str:
     game = GameBuilder(state)
 
-    tmp = sorted([(key, val) for key, val in game.payoff_dict.items()])
-    row = []
-    col = []
-    data = []
-    for key, val in tmp:
-        r, c = key
-        row.append(r)
-        col.append(c)
-        data.append(-val)
-
-    obj = {
-        "x": {
-            "par": game.par[0],
-            "idx": game.idx[0],
-        },
-        "y": {
-            "par": game.par[1],
-            "idx": game.idx[1],
-        },
-        "A": {
+    def mat_a():
+        tmp = sorted([(key, val) for key, val in game.payoff_dict.items()])
+        row = []
+        col = []
+        data = []
+        for key, val in tmp:
+            r, c = key
+            row.append(r)
+            col.append(c)
+            data.append(-val)
+        return {
             "row": row,
             "col": col,
             "data": data,
-        },
+        }
+
+    def sp(i: int):
+        tmp = sorted([(i, obs) for obs, i in game.obs[i].items()])
+        obs = [obs for i, obs in tmp]
+        return {
+            "par": game.par[i],
+            "idx": game.idx[i],
+            "obs": obs,
+            "action": game.action[i],
+        }
+
+    obj = {
+        "x": sp(0),
+        "y": sp(1),
+        "A": mat_a(),
     }
 
     return json.dumps(obj)

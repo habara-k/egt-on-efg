@@ -2,6 +2,7 @@ import datetime
 import json
 
 import matplotlib.pyplot as plt  # type: ignore
+import numpy as np
 from fire import Fire  # type: ignore
 
 import game_builder
@@ -56,4 +57,49 @@ def draw_multi(logdir: str, game: str, *args):
     plt.savefig(f"{logdir}/{now}-{game}-error.png")
 
 
-Fire({"build": build, "draw": draw, "draw_multi": draw_multi})
+def travel(x_path: str, game_path: str, player: str):
+    assert player == "x" or player == "y"
+    with open(f"{x_path}/{player}.json", "r") as f:
+        x = np.array(json.load(f))
+    with open(game_path, "r") as f:
+        game = json.load(f)[player]
+
+    inv: list[list[int]] = [[] for i in range(game["idx"][-1])]
+    for i, p in enumerate(game["par"]):
+        inv[p].append(i)
+
+    path = [0]
+
+    while True:
+        if len(path) % 2 == 1:
+            j = path[-1]
+            obs = [game["obs"][i] for i in inv[j]]
+            print(f"{obs=}")
+            k = int(input("Select observation: "))
+            if 0 <= k < len(obs):
+                path.append(inv[j][k])
+            elif len(path) > 1:
+                path.pop()
+
+        else:
+            i = path[-1]
+            l = game["idx"][i]
+            r = game["idx"][i + 1]
+            action = game["action"][i]
+            print(f"{action=}")
+            print(f"{x[l:r] / x[l:r].sum()}")
+            a = int(input("Select action: "))
+            if 0 <= a < r - l:
+                path.append(l + a)
+            else:
+                path.pop()
+
+
+Fire(
+    {
+        "build": build,
+        "draw": draw,
+        "draw_multi": draw_multi,
+        "travel": travel,
+    }
+)
