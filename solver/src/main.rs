@@ -31,7 +31,21 @@ fn main() {
         cfr_plus(&game, cfg.steps);
     }
     if cfg.method == "egt" {
-        let egt = EGT::new(&game);
+        let egt = EGT::new(&game, "normal");
         egt.run(cfg.steps);
+    }
+    if cfg.method == "egt-centering" {
+        let egt = EGT::new(&game, "normal");
+        let (x, y, _) = egt.run(cfg.steps / 10);
+        let mut egt = EGT::new(&game, "centering");
+        egt.set_center(x, y);
+        let (x, y, _) = egt.run(cfg.steps * 9 / 10);
+    }
+    if cfg.method == "mix" {
+        let egt = EGT::new(&game, "normal");
+        let (x, y, _) = cfr_plus(&game, cfg.steps / 10);
+        let mut egt = EGT::new(&game, "centering");
+        egt.set_center(x, y);
+        let (x, y, _) = egt.run(cfg.steps * 9 / 10);
     }
 }

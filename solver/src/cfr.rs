@@ -41,7 +41,7 @@ fn normalize(sp: &StrategyPolytope, regret: Array1<f64>) -> Array1<f64> {
     x
 }
 
-pub fn cfr(game: &Game, steps: usize) {
+pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
     let start = std::time::Instant::now();
     let mut regret_x = Array1::<f64>::zeros(*game.sp1.idx.last().unwrap());
     let mut regret_y = Array1::<f64>::zeros(*game.sp2.idx.last().unwrap());
@@ -52,7 +52,7 @@ pub fn cfr(game: &Game, steps: usize) {
     let mut sum_px = px.clone();
     let mut sum_py = py.clone();
 
-    let mut result = vec![game.error(&px, &py)];
+    let mut error = vec![game.error(&px, &py)];
     for k in 1..(steps + 1) {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         accumulate(&game.sp2, &y, game.mat_a_t.dot(&px), &mut regret_y);
@@ -62,19 +62,24 @@ pub fn cfr(game: &Game, steps: usize) {
         py = prod(&game.sp2, y.clone());
         sum_px.add_assign(&px);
         sum_py.add_assign(&py);
-        result.push(game.error(&sum_px, &sum_py) / (k + 1) as f64);
+        error.push(game.error(&sum_px, &sum_py) / (k + 1) as f64);
     }
-    dbg!(&result[0]);
-    dbg!(&result[steps]);
+    dbg!(&error[0]);
+    dbg!(&error[steps]);
     let end = start.elapsed();
     println!(
         "{}.{:03}[s] elapsed.",
         end.as_secs(),
         end.subsec_nanos() / 1_000_000
     );
+    (
+        sum_px / (steps + 1) as f64,
+        sum_py / (steps + 1) as f64,
+        error,
+    )
 }
 
-pub fn cfr_plus(game: &Game, steps: usize) {
+pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
     let start = std::time::Instant::now();
     let mut regret_x = Array1::<f64>::zeros(*game.sp1.idx.last().unwrap());
     let mut regret_y = Array1::<f64>::zeros(*game.sp2.idx.last().unwrap());
@@ -85,7 +90,7 @@ pub fn cfr_plus(game: &Game, steps: usize) {
     let mut sum_px = px.clone();
     let mut sum_py = py.clone();
 
-    let mut result = vec![game.error(&px, &py)];
+    let mut error = vec![game.error(&px, &py)];
     for k in 1..(steps + 1) {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         regret_x.mapv_inplace(|v| v.max(0.0));
@@ -100,14 +105,16 @@ pub fn cfr_plus(game: &Game, steps: usize) {
         sum_py.add_assign(&((k + 1) as f64 * &py));
 
         let weight = (k + 1) as f64 * (k + 2) as f64 / 2.0;
-        result.push(game.error(&sum_px, &sum_py) / weight);
+        error.push(game.error(&sum_px, &sum_py) / weight);
     }
-    dbg!(&result[0]);
-    dbg!(&result[steps]);
+    dbg!(&error[0]);
+    dbg!(&error[steps]);
     let end = start.elapsed();
     println!(
         "{}.{:03}[s] elapsed.",
         end.as_secs(),
         end.subsec_nanos() / 1_000_000
     );
+    let weight = (steps + 1) as f64 * (steps + 2) as f64 / 2.0;
+    (sum_px / weight, sum_py / weight, error)
 }
