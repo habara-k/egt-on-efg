@@ -1,4 +1,5 @@
 use crate::game::{Game, StrategyPolytope};
+use indicatif::ProgressIterator;
 use ndarray::{s, Array1};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
@@ -42,7 +43,6 @@ fn normalize(sp: &StrategyPolytope, regret: Array1<f64>) -> Array1<f64> {
 }
 
 pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
-    let start = std::time::Instant::now();
     let mut regret_x = Array1::<f64>::zeros(*game.sp1.idx.last().unwrap());
     let mut regret_y = Array1::<f64>::zeros(*game.sp2.idx.last().unwrap());
     let mut x = normalize(&game.sp1, regret_x.clone());
@@ -54,7 +54,7 @@ pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
 
     let mut error = vec![game.error(&px, &py)];
     dbg!(&error[0]);
-    for k in 1..(steps + 1) {
+    for k in (1..(steps + 1)).progress() {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         accumulate(&game.sp2, &y, game.mat_a_t.dot(&px), &mut regret_y);
         x = normalize(&game.sp1, regret_x.clone().mapv(|v| v.max(0.0)));
@@ -67,12 +67,6 @@ pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
     }
     dbg!(&error[steps]);
     dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
-    let end = start.elapsed();
-    println!(
-        "{}.{:03}[s] elapsed.",
-        end.as_secs(),
-        end.subsec_nanos() / 1_000_000
-    );
     (
         sum_px / (steps + 1) as f64,
         sum_py / (steps + 1) as f64,
@@ -81,7 +75,6 @@ pub fn cfr(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
 }
 
 pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
-    let start = std::time::Instant::now();
     let mut regret_x = Array1::<f64>::zeros(*game.sp1.idx.last().unwrap());
     let mut regret_y = Array1::<f64>::zeros(*game.sp2.idx.last().unwrap());
     let mut x = normalize(&game.sp1, regret_x.clone());
@@ -93,7 +86,7 @@ pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64
 
     let mut error = vec![game.error(&px, &py)];
     dbg!(&error[0]);
-    for k in 1..(steps + 1) {
+    for k in (1..(steps + 1)).progress() {
         accumulate(&game.sp1, &x, -game.mat_a.dot(&py), &mut regret_x);
         regret_x.mapv_inplace(|v| v.max(0.0));
         x = normalize(&game.sp1, regret_x.clone());
@@ -111,12 +104,6 @@ pub fn cfr_plus(game: &Game, steps: usize) -> (Array1<f64>, Array1<f64>, Vec<f64
     }
     dbg!(&error[steps]);
     dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
-    let end = start.elapsed();
-    println!(
-        "{}.{:03}[s] elapsed.",
-        end.as_secs(),
-        end.subsec_nanos() / 1_000_000
-    );
     let weight = (steps + 1) as f64 * (steps + 2) as f64 / 2.0;
     (sum_px / weight, sum_py / weight, error)
 }

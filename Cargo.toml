@@ -11,3 +11,4 @@ ndarray = { version = "0.15.0", features = ["blas"] }
 blas-src = { version = "0.8", features = ["accelerate"] }  # for macOS
 indicatif = "0.17.3"
 argh = "0.1.10"
+chrono = "0.4.23"

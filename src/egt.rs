@@ -120,7 +120,6 @@ impl<'a> EGT<'a> {
         self.pf2.set_center(y);
     }
     pub fn run(&self, step: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
-        let start = std::time::Instant::now();
         let (mut x, mut y, mu) = self.initialize();
         dbg!(&mu);
         let mut mu1: f64 = mu;
@@ -144,12 +143,6 @@ impl<'a> EGT<'a> {
         }
         dbg!(&error[step]);
         dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
-        let end = start.elapsed();
-        println!(
-            "{}.{:03}[s] elapsed.",
-            end.as_secs(),
-            end.subsec_nanos() / 1_000_000
-        );
         (x, y, error)
     }
 }

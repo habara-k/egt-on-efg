@@ -8,7 +8,7 @@ RANK = {"J": 0, "Q": 1, "K": 3}
 
 
 class KuhnPoker(GameState[Action, Obs]):
-    def __init__(self):
+    def __init__(self) -> None:
         self.terminated: bool = False
         self.bet: list[int] = [1, 1]
         self.history: list[Action] = []
@@ -73,4 +73,4 @@ class KuhnPoker(GameState[Action, Obs]):
         card1, card2 = list(self.history[0])
         if RANK[card1] > RANK[card2]:
             return bet
-        return bet
+        return -bet

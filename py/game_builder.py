@@ -100,8 +100,8 @@ class GameBuilder(Generic[A, O]):
 
 def build(state: GameState[A, O]) -> str:
     game = GameBuilder(state)
-    tmp = sorted([(key, val) for key, val in game.payoff_dict.items()])
 
+    tmp = sorted([(key, val) for key, val in game.payoff_dict.items()])
     row = []
     col = []
     data = []
