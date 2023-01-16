@@ -27,25 +27,21 @@ impl StrategyPolytope {
 }
 
 pub struct SparseMatrix {
-    cols: Vec<Vec<usize>>,
-    data: Vec<Vec<f64>>,
+    cols: Vec<Vec<(usize, f64)>>,
 }
 impl SparseMatrix {
-    fn new(n_row: usize, row: &Vec<usize>, col: &Vec<usize>, dat: &Vec<f64>) -> Self {
+    fn new(n_row: usize, row: &Vec<usize>, col: &Vec<usize>, data: &Vec<f64>) -> Self {
         let mut cols = vec![vec![]; n_row];
-        let mut data = vec![vec![]; n_row];
-        for ((&r, &c), &d) in row.iter().zip(col).zip(dat) {
-            cols[r].push(c);
-            data[r].push(d);
+        for ((&r, &c), &d) in row.iter().zip(col).zip(data) {
+            cols[r].push((c, d));
         }
-        Self { cols, data }
+        Self { cols }
     }
     pub fn dot(&self, rhs: &Array1<f64>) -> Array1<f64> {
         return self
             .cols
             .iter()
-            .zip(&self.data)
-            .map(|(col, dat)| col.iter().zip(dat.iter()).map(|(&c, d)| rhs[c] * d).sum())
+            .map(|col| col.iter().map(|(c, d)| rhs[*c] * d).sum())
             .collect::<Vec<_>>()
             .into();
     }

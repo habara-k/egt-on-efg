@@ -1,4 +1,5 @@
 use crate::game::{Game, StrategyPolytope};
+use indicatif::ProgressIterator;
 use ndarray::{s, Array1};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
@@ -203,7 +204,7 @@ impl<'a> EGT<'a> {
         let mut tau: f64 = 0.5;
 
         let mut result = vec![self.game.error(&x, &y)];
-        for _ in 0..step {
+        for _ in (0..step).progress() {
             while self.excessive_gap(&x, &y, mu1 * 0.9, mu2 * 0.9) > 0.0 {
                 mu1 *= 0.9;
                 mu2 *= 0.9;
