@@ -3,7 +3,7 @@
 ## Benchmark
 
 - the number of iterations: 100'000
-- the error is the minimum, not the last one
+- the error is the last one, not the minimum
 
 
 | Method                  | KuhnPoker             | LeducHold'em          | LeducHold'em13        |
