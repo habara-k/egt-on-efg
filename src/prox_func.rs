@@ -39,9 +39,6 @@ impl<'a> Normal<'a> {
             w[i] += (sp.idx[i]..sp.idx[i + 1])
                 .map(|j| ws[j])
                 .fold(f64::NEG_INFINITY, |m, v| v.max(m));
-            //w[i] += ws
-            //    .slice(s![sp.idx[i]..sp.idx[i + 1]])
-            //    .fold(f64::NEG_INFINITY, |m, v| v.max(m));
             ws[p] += w[i]
         }
         let mut c: Array1<f64> = -ws;
@@ -49,7 +46,6 @@ impl<'a> Normal<'a> {
             for j in sp.idx[i]..sp.idx[i + 1] {
                 c[j] += w[i];
             }
-            // c.slice_mut(s![sp.idx[i]..sp.idx[i + 1]]).add_assign(w[i]);
         }
         let mut _center: Array1<f64> = Array1::zeros(*sp.idx.last().unwrap());
         let min: f64 = -conj(&sp, &mut _center, &w, 0.0);

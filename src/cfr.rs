@@ -10,8 +10,6 @@ fn prod(sp: &StrategyPolytope, mut x: Array1<f64>) -> Array1<f64> {
         for j in sp.idx[i]..sp.idx[i + 1] {
             x[j] *= xp;
         }
-        //let xp = x[p];
-        //x.slice_mut(s![sp.idx[i]..sp.idx[i + 1]]).mul_assign(xp);
     }
     x
 }
@@ -25,12 +23,9 @@ fn accumulate(
         let l = sp.idx[i];
         let r = sp.idx[i + 1];
         let avg: f64 = (l..r).map(|j| util[j] * x[j]).sum();
-        //let avg = util.slice(s![l..r]).dot(&x.slice(s![l..r]));
         for j in l..r {
             regret[j] += util[j] - avg;
         }
-        // regret.slice_mut(s![l..r]).sub_assign(avg);
-        // regret.slice_mut(s![l..r]).add_assign(&util.slice(s![l..r]));
         util[p] += avg;
     }
 }
@@ -41,18 +36,15 @@ fn normalize(sp: &StrategyPolytope, regret: Array1<f64>) -> Array1<f64> {
         let l = sp.idx[i];
         let r = sp.idx[i + 1];
         let total: f64 = (l..r).map(|j| x[j]).sum();
-        //let total = x.slice(s![l..r]).sum();
         if total == 0.0 {
             let v = 1.0 / (r - l) as f64;
             for j in l..r {
                 x[j] = v;
             }
-            // x.slice_mut(s![l..r]).fill(1.0 / (r - l) as f64);
         } else {
             for j in l..r {
                 x[j] /= total;
             }
-            // x.slice_mut(s![l..r]).div_assign(total);
         }
     }
     x
