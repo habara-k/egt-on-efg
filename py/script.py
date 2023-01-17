@@ -54,7 +54,7 @@ def draw_multi(logdir: str, game: str, *args):
     plt.grid()
     plt.legend()
     now = datetime.datetime.now().strftime("%Y%m%d-%H:%M")
-    plt.savefig(f"{logdir}/{now}-{game}-error.png")
+    plt.savefig(f"{logdir}/{now}-{game}-error.png", dpi=300)
 
 
 def travel(x_path: str, game_path: str, player: str):

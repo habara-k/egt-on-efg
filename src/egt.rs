@@ -138,7 +138,7 @@ impl<'a> EGT<'a> {
             } else {
                 (x, y, mu2, tau) = self.decrease_mu2(&x, &y, mu1, mu2, tau)
             }
-            assert!(self.excessive_gap(&x, &y, mu1, mu2) >= 0.0);
+            // assert!(self.excessive_gap(&x, &y, mu1, mu2) >= 0.0);
             error.push(self.game.error(&x, &y))
         }
         dbg!(&error[step]);

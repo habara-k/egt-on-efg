@@ -37,14 +37,20 @@ impl<'a> Normal<'a> {
         let mut w: Array1<f64> = Array1::ones(sp.par.len());
         let mut ws: Array1<f64> = Array1::zeros(*sp.idx.last().unwrap());
         for (i, &p) in sp.par.iter().enumerate().rev() {
-            w[i] += ws
-                .slice(s![sp.idx[i]..sp.idx[i + 1]])
+            w[i] += (sp.idx[i]..sp.idx[i + 1])
+                .map(|j| ws[j])
                 .fold(f64::NEG_INFINITY, |m, v| v.max(m));
+            //w[i] += ws
+            //    .slice(s![sp.idx[i]..sp.idx[i + 1]])
+            //    .fold(f64::NEG_INFINITY, |m, v| v.max(m));
             ws[p] += w[i]
         }
         let mut c: Array1<f64> = -ws;
         for i in 0..sp.par.len() {
-            c.slice_mut(s![sp.idx[i]..sp.idx[i + 1]]).add_assign(w[i]);
+            for j in sp.idx[i]..sp.idx[i + 1] {
+                c[j] += w[i];
+            }
+            // c.slice_mut(s![sp.idx[i]..sp.idx[i + 1]]).add_assign(w[i]);
         }
         let mut _center: Array1<f64> = Array1::zeros(*sp.idx.last().unwrap());
         let min: f64 = -conj(&sp, &mut _center, &w, 0.0);
@@ -133,24 +139,37 @@ fn conj(sp: &StrategyPolytope, x: &mut Array1<f64>, w: &Array1<f64>, min: f64) -
     for (i, &p) in sp.par.iter().enumerate().rev() {
         let l: usize = sp.idx[i];
         let r: usize = sp.idx[i + 1];
-        x.slice_mut(s![l..r]).div_assign(w[i]);
-        let max = x.slice(s![l..r]).fold(0.0 / 0.0, |m, v| v.max(m));
+        let max = (l..r)
+            .map(|j| {
+                x[j] /= w[i];
+                x[j]
+            })
+            .fold(f64::NEG_INFINITY, |m, v| v.max(m));
         if max == f64::NEG_INFINITY {
-            x.slice_mut(s![l..r]).fill(1.0 / (r - l) as f64);
+            let v = 1.0 / (r - l) as f64;
+            for j in l..r {
+                x[j] = v;
+            }
             x[p] = f64::NEG_INFINITY;
             continue;
         }
-        x.slice_mut(s![l..r]).sub_assign(max);
-        x.slice_mut(s![l..r]).mapv_inplace(f64::exp);
-        let z: f64 = x.slice(s![l..r]).sum();
-        x.slice_mut(s![l..r]).div_assign(z);
+        let mut z = 0.0;
+        for j in l..r {
+            x[j] = (x[j] - max).exp();
+            z += x[j];
+        }
+        for j in l..r {
+            x[j] /= z;
+        }
         x[p] += (z.ln() + max) * w[i];
     }
     let val: f64 = x[0] + min;
     x[0] = 1.0;
     for (i, &p) in sp.par.iter().enumerate() {
         let xp = x[p];
-        x.slice_mut(s![sp.idx[i]..sp.idx[i + 1]]).mul_assign(xp);
+        for j in sp.idx[i]..sp.idx[i + 1] {
+            x[j] *= xp;
+        }
     }
     val
 }
