@@ -1,6 +1,5 @@
 use crate::game::StrategyPolytope;
-use ndarray::{s, Array1};
-use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use ndarray::Array1;
 
 pub trait ProxFunction {
     fn grad(&self, x: Array1<f64>) -> Array1<f64>; // Return ∇d(x)

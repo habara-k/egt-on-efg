@@ -1,7 +1,7 @@
 use crate::game::{Game, StrategyPolytope};
 use indicatif::ProgressIterator;
-use ndarray::{s, Array1};
-use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use ndarray::Array1;
+use std::ops::AddAssign;
 
 fn prod(sp: &StrategyPolytope, mut x: Array1<f64>) -> Array1<f64> {
     x[0] = 1.0;
