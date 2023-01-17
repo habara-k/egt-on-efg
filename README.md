@@ -14,6 +14,6 @@
 | EGT-centering           | 0.30[s], error=3.6e-09 | 5.7[s], error=1.2e-06 | 148[s], error=8.5e-07  |
 | EGT-centering with CFR+ | 0.28[s], error=7.0e-10 | 5.3[s], error=1.3e-07 | 140[s], error=3.5e-07  |
 
-![Kuhn Poker](image/20230118-01:04-Kuhn Poker-error.png)
-![Leduc Hold'em (3 ranks)](image/20230118-01:06-Leduc Hold'em (3 ranks)-error.png)
-![Leduc Hold'em (13 ranks)](image/20230118-01:08-Leduc Hold'em (13 ranks)-error.png)
+![kuhn](image/20230118-01:04-kuhn-error.png)
+![leduc](image/20230118-01:06-leduc-error.png)
+![leduc13](image/20230118-01:08-leduc13-error.png)
