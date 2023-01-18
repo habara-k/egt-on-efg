@@ -40,12 +40,13 @@ def draw(path: str):
 
 
 def draw_multi(logdir: str, game: str, *args):
+    start = 10**3
     for i in range(0, len(args), 2):
         path = args[i]
         label = args[i + 1]
         with open(f"{path}/error.json", "r") as f:
             error = json.load(f)
-        plt.plot(error, label=label)
+        plt.plot(list(range(start, len(error))), error[start:], label=label)
     plt.title(game)
     plt.xscale("log")
     plt.yscale("log")

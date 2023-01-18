@@ -128,21 +128,19 @@ impl<'a> EGT<'a> {
 
         let mut error = vec![self.game.error(&x, &y)];
         dbg!(&error[0]);
-        for _ in (0..step).progress() {
-            while self.excessive_gap(&x, &y, mu1 * 0.9, mu2 * 0.9) > 0.0 {
-                mu1 *= 0.9;
-                mu2 *= 0.9;
-            }
+
+        for _ in (1..step).progress() {
             if mu1 > mu2 {
-                (x, y, mu1, tau) = self.decrease_mu1(&x, &y, mu1, mu2, tau)
+                (x, y, mu1, tau) = self.decrease_mu1(&x, &y, mu1, mu2, tau);
             } else {
-                (x, y, mu2, tau) = self.decrease_mu2(&x, &y, mu1, mu2, tau)
+                (x, y, mu2, tau) = self.decrease_mu2(&x, &y, mu1, mu2, tau);
             }
             // assert!(self.excessive_gap(&x, &y, mu1, mu2) >= 0.0);
-            error.push(self.game.error(&x, &y))
+            error.push(self.game.error(&x, &y));
         }
-        dbg!(&error[step]);
-        dbg!(&error.iter().fold(f64::INFINITY, |m, v| v.min(m)));
+        dbg!(&mu1);
+        dbg!(&mu2);
+        dbg!(&error[step - 1]);
         (x, y, error)
     }
 }

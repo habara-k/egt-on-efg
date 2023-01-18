@@ -2,18 +2,14 @@
 
 ## Benchmark
 
-- the number of iterations: 100'000
-- the error is the last one, not the minimum
-
-
 | Method                  | KuhnPoker              | LeducHold'em(3 ranks) | LeducHold'em(13 ranks) |
 | ----------------------- | ---------------------- | --------------------- | ---------------------  |
-| CFR                     | 0.11[s], error=1.4e-03 | 1.5[s], error=5.6e-03 | 46[s],  error=3.2e-03  |
-| CFR+                    | 0.11[s], error=4.4e-06 | 1.5[s], error=7.6e-07 | 46[s],  error=3.7e-07  |
-| EGT                     | 0.30[s], error=1.1e-05 | 5.6[s], error=8.8e-05 | 145[s], error=4.6e-05  |
-| EGT-centering           | 0.30[s], error=3.6e-09 | 5.7[s], error=1.2e-06 | 148[s], error=8.5e-07  |
-| EGT-centering with CFR+ | 0.28[s], error=7.0e-10 | 5.3[s], error=1.3e-07 | 140[s], error=3.5e-07  |
+| CFR                     | 0.12[s], error=1.4e-03 | 15[s], error=1.8e-03 | 470[s],  error=9.6e-04  |
+| CFR+                    | 0.12[s], error=4.3e-06 | 15[s], error=1.7e-07 | 466[s],  error=2.1e-08  |
+| EGT                     | 0.33[s], error=3.3e-06 | 45[s], error=2.8e-06 | 1151[s], error=2.0e-06  |
+| EGT-centering           | 0.28[s], error=1.9e-09 | 45[s], error=1.7e-07 | 1199[s], error=1.6e-08 |
+| EGT-centering with CFR+ | 0.24[s], error=9.7e-10 | 42[s], error=7.0e-10 | 1091[s], error=2.8e-09 |
 
-![kuhn](image/20230118-01:04-kuhn-error.png)
-![leduc](image/20230118-01:06-leduc-error.png)
-![leduc13](image/20230118-01:08-leduc13-error.png)
+![kuhn](image/20230119-00:47-kuhn.png)
+![leduc](image/20230119-00:53-leduc.png)
+![leduc13](image/20230119-02:09-leduc13.png)

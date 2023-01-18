@@ -21,7 +21,7 @@ struct Config {
 
     /// the number of iterations
     #[argh(option, short = 's')]
-    steps: usize,
+    step: usize,
 }
 
 fn main() {
@@ -29,26 +29,26 @@ fn main() {
     let game = Game::load(&cfg.game);
     let start = std::time::Instant::now();
     let (x, y, error) = match cfg.method.as_str() {
-        "cfr" => cfr(&game, cfg.steps),
-        "cfr+" => cfr_plus(&game, cfg.steps),
+        "cfr" => cfr(&game, cfg.step),
+        "cfr+" => cfr_plus(&game, cfg.step),
         "egt" => {
             let egt = EGT::new(&game, "normal");
-            egt.run(cfg.steps)
+            egt.run(cfg.step)
         }
         "egt-centering" => {
             let egt = EGT::new(&game, "normal");
-            let (x, y, mut error) = egt.run(cfg.steps / 10);
+            let (x, y, mut error) = egt.run(cfg.step / 10);
             let mut egt = EGT::new(&game, "centering");
             egt.set_center(x, y);
-            let (x, y, mut error2) = egt.run(cfg.steps * 9 / 10);
+            let (x, y, mut error2) = egt.run(cfg.step * 9 / 10);
             error.append(&mut error2);
             (x, y, error)
         }
         "mix" => {
-            let (x, y, mut error) = cfr_plus(&game, cfg.steps / 10);
+            let (x, y, mut error) = cfr_plus(&game, cfg.step / 10);
             let mut egt = EGT::new(&game, "centering");
             egt.set_center(x, y);
-            let (x, y, mut error2) = egt.run(cfg.steps * 9 / 10);
+            let (x, y, mut error2) = egt.run(cfg.step * 9 / 10);
             error.append(&mut error2);
             (x, y, error)
         }
