@@ -92,8 +92,8 @@ impl<'a> Centering<'a> {
                 c0[j] += w[i];
             }
         }
-        let c1 = (_center.mapv(f64::ln) + 1.0) * &c0;
-        let min = _center.mapv(|v| v * v.ln()).dot(&c0) - c1.dot(&_center);
+        let c1 = -(_center.mapv(f64::ln) + 1.0) * &c0;
+        let min = _center.mapv(|v| v * v.ln()).dot(&c0) + c1.dot(&_center);
 
         Self {
             sp,
@@ -108,16 +108,77 @@ impl<'a> Centering<'a> {
 impl ProxFunction for Centering<'_> {
     fn grad(&self, x: Array1<f64>) -> Array1<f64> {
         // Return ∇d(x)
-        (x.mapv(f64::ln) + 1.0) * &self.c0 - &self.c1
+        (x.mapv(f64::ln) + 1.0) * &self.c0 + &self.c1
     }
     fn conj(&self, mut x: Array1<f64>) -> f64 {
         // Return d(x)
-        x += &self.c1;
+        x -= &self.c1;
         conj(&self.sp, &mut x, &self.w) + self.min
     }
     fn conj_grad(&self, mut x: Array1<f64>) -> Array1<f64> {
         // Return ∇d*(x)
-        x += &self.c1;
+        x -= &self.c1;
+        conj(&self.sp, &mut x, &self.w);
+        x
+    }
+    fn center(&self) -> &Array1<f64> {
+        &self._center
+    }
+}
+
+pub struct Farina2021<'a> {
+    sp: &'a StrategyPolytope,
+    w: Array1<f64>,
+    c0: Array1<f64>, // the coefficient of `x\lnx`
+    c1: Array1<f64>, // the coefficient of `x`
+    _center: Array1<f64>,
+}
+
+impl<'a> Farina2021<'a> {
+    pub fn new(sp: &'a StrategyPolytope) -> Self {
+        let mut w: Array1<f64> = Array1::ones(sp.par.len());
+        let mut ws: Array1<f64> = Array1::zeros(*sp.idx.last().unwrap());
+        for (i, &p) in sp.par.iter().enumerate().rev() {
+            w[i] += (sp.idx[i]..sp.idx[i + 1])
+                .map(|j| ws[j])
+                .fold(f64::NEG_INFINITY, |m, v| v.max(m));
+            ws[p] += w[i]
+        }
+        let mut c0: Array1<f64> = -ws;
+        for i in 0..sp.par.len() {
+            for j in sp.idx[i]..sp.idx[i + 1] {
+                c0[j] += w[i];
+            }
+        }
+        let mut c1 = Array1::zeros(*sp.idx.last().unwrap());
+        for (i, &p) in sp.par.iter().enumerate() {
+            c1[p] += w[i] * ((sp.idx[i + 1] - sp.idx[i]) as f64).ln();
+        }
+        let mut _center = -c1.clone();
+        assert!(conj(&sp, &mut _center, &w).abs() < 1e-9);
+
+        Self {
+            sp,
+            w,
+            c0,
+            c1,
+            _center,
+        }
+    }
+}
+impl ProxFunction for Farina2021<'_> {
+    fn grad(&self, x: Array1<f64>) -> Array1<f64> {
+        // Return ∇d(x)
+        (x.mapv(f64::ln) + 1.0) * &self.c0 + &self.c1
+    }
+    fn conj(&self, mut x: Array1<f64>) -> f64 {
+        // Return d(x)
+        x -= &self.c1;
+        conj(&self.sp, &mut x, &self.w)
+    }
+    fn conj_grad(&self, mut x: Array1<f64>) -> Array1<f64> {
+        // Return ∇d*(x)
+        x -= &self.c1;
         conj(&self.sp, &mut x, &self.w);
         x
     }

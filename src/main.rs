@@ -3,7 +3,7 @@ extern crate blas_src;
 use egt_on_efg::cfr::{cfr, cfr_plus};
 use egt_on_efg::egt::EGT;
 use egt_on_efg::game::Game;
-use egt_on_efg::prox_func::{Centering, Normal};
+use egt_on_efg::prox_func::{Centering, Farina2021, Normal};
 
 use argh::FromArgs;
 use chrono::Local;
@@ -35,6 +35,12 @@ fn main() {
         "egt" => {
             let pf1 = Normal::new(&game.sp1);
             let pf2 = Normal::new(&game.sp2);
+            let egt = EGT::new(&game, &pf1, &pf2);
+            egt.run(cfg.step)
+        }
+        "egt-farina" => {
+            let pf1 = Farina2021::new(&game.sp1);
+            let pf2 = Farina2021::new(&game.sp2);
             let egt = EGT::new(&game, &pf1, &pf2);
             egt.run(cfg.step)
         }
