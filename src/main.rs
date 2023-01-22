@@ -3,6 +3,7 @@ extern crate blas_src;
 use egt_on_efg::cfr::{cfr, cfr_plus};
 use egt_on_efg::egt::EGT;
 use egt_on_efg::game::Game;
+use egt_on_efg::prox_func::{Centering, Normal};
 
 use argh::FromArgs;
 use chrono::Local;
@@ -32,22 +33,29 @@ fn main() {
         "cfr" => cfr(&game, cfg.step),
         "cfr+" => cfr_plus(&game, cfg.step),
         "egt" => {
-            let egt = EGT::new(&game, "normal");
+            let pf1 = Normal::new(&game.sp1);
+            let pf2 = Normal::new(&game.sp2);
+            let egt = EGT::new(&game, &pf1, &pf2);
             egt.run(cfg.step)
         }
         "egt-centering" => {
-            let egt = EGT::new(&game, "normal");
+            let pf1 = Normal::new(&game.sp1);
+            let pf2 = Normal::new(&game.sp2);
+            let egt = EGT::new(&game, &pf1, &pf2);
             let (x, y, mut error) = egt.run(cfg.step / 10);
-            let mut egt = EGT::new(&game, "centering");
-            egt.set_center(x, y);
+
+            let pf1 = Centering::new(&game.sp1, x);
+            let pf2 = Centering::new(&game.sp2, y);
+            let egt = EGT::new(&game, &pf1, &pf2);
             let (x, y, mut error2) = egt.run(cfg.step * 9 / 10);
             error.append(&mut error2);
             (x, y, error)
         }
         "mix" => {
             let (x, y, mut error) = cfr_plus(&game, cfg.step / 10);
-            let mut egt = EGT::new(&game, "centering");
-            egt.set_center(x, y);
+            let pf1 = Centering::new(&game.sp1, x);
+            let pf2 = Centering::new(&game.sp2, y);
+            let egt = EGT::new(&game, &pf1, &pf2);
             let (x, y, mut error2) = egt.run(cfg.step * 9 / 10);
             error.append(&mut error2);
             (x, y, error)

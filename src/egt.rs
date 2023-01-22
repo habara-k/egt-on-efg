@@ -1,17 +1,15 @@
 use crate::game::Game;
-use crate::prox_func::{build_prox_function, ProxFunction};
+use crate::prox_func::ProxFunction;
 use indicatif::ProgressIterator;
 use ndarray::Array1;
 
-pub struct EGT<'a> {
+pub struct EGT<'a, PF: ProxFunction> {
     game: &'a Game,
-    pf1: Box<dyn ProxFunction + 'a>,
-    pf2: Box<dyn ProxFunction + 'a>,
+    pf1: &'a PF,
+    pf2: &'a PF,
 }
-impl<'a> EGT<'a> {
-    pub fn new(game: &'a Game, pf_key: &str) -> Self {
-        let pf1 = build_prox_function(pf_key, &game.sp1);
-        let pf2 = build_prox_function(pf_key, &game.sp2);
+impl<'a, PF: ProxFunction> EGT<'a, PF> {
+    pub fn new(game: &'a Game, pf1: &'a PF, pf2: &'a PF) -> Self {
         Self { game, pf1, pf2 }
     }
     fn excessive_gap(&self, x: &Array1<f64>, y: &Array1<f64>, mu1: f64, mu2: f64) -> f64 {
@@ -114,10 +112,6 @@ impl<'a> EGT<'a> {
             tau *= 0.5;
             assert!(tau > 1e-20);
         }
-    }
-    pub fn set_center(&mut self, x: Array1<f64>, y: Array1<f64>) {
-        self.pf1.set_center(x);
-        self.pf2.set_center(y);
     }
     pub fn run(&self, step: usize) -> (Array1<f64>, Array1<f64>, Vec<f64>) {
         let (mut x, mut y, mu) = self.initialize();
