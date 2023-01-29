@@ -39,14 +39,27 @@ def draw(path: str):
     plt.savefig(f"{path}/error.png")
 
 
+MARKER = ['^', 's', 'D', '.', '*']
+MARKERSIZE = [8, 8, 7, 9, 8]
 def draw_multi(logdir: str, game: str, *args):
-    start = 10**3
-    for i in range(0, len(args), 2):
-        path = args[i]
-        label = args[i + 1]
+    plt.rcParams['font.family'] = 'Times New Roman'
+    z_order = [1,2,3,5,4]
+    for i in range(0, len(args)//2):
+        path = args[2*i]
+        label = args[2*i + 1]
         with open(f"{path}/error.json", "r") as f:
             error = json.load(f)
-        plt.plot(list(range(start, len(error))), error[start:], label=label)
+        start = len(error) // 1000
+        markevery = [start]
+        while markevery[-1] < len(error):
+            markevery.append(markevery[-1] * 10)
+        markevery = list(map(lambda x: x-start, markevery))
+        markevery[-1] -= 1
+        iter = list(range(start, len(error)))
+        plt.plot(iter, error[start:], label=label, linewidth=0.8, zorder=z_order[i], alpha=0.8,
+                 markersize=MARKERSIZE[i],
+                 marker=MARKER[i], markevery=markevery, markeredgewidth=0.5, markeredgecolor='k')
+
     plt.title(game)
     plt.xscale("log")
     plt.yscale("log")

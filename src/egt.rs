@@ -46,17 +46,17 @@ impl<'a, PF: ProxFunction> EGT<'a, PF> {
         tau: f64,
     ) -> (Array1<f64>, Array1<f64>, f64) {
         let x_opt = self.pf1.conj_grad(self.game.mat_a.dot(y) / -mu1);
-        let x_hat = (1.0 - tau) * x + tau * &x_opt;
-        let y_opt = self.pf2.conj_grad(self.game.mat_a_t.dot(&x_hat) / mu2);
-        let x_tilde = self.pf1.projection(
-            x_opt,
-            self.game.mat_a.dot(&y_opt) * (tau / ((1.0 - tau) * mu1)),
-        );
-        (
-            (1.0 - tau) * x + tau * &x_tilde,
-            (1.0 - tau) * y + tau * &y_opt,
-            (1.0 - tau) * mu1,
-        )
+        let y_opt = self
+            .pf2
+            .conj_grad(self.game.mat_a_t.dot(&((1.0 - tau) * x + tau * &x_opt)) / mu2);
+        let y_nxt = (1.0 - tau) * y + tau * &y_opt;
+        let x_nxt = (1.0 - tau) * x
+            + tau
+                * self.pf1.projection(
+                    x_opt,
+                    self.game.mat_a.dot(&y_opt) * (tau / ((1.0 - tau) * mu1)),
+                );
+        (x_nxt, y_nxt, (1.0 - tau) * mu1)
     }
     fn shrink_mu2(
         &self,
@@ -67,17 +67,17 @@ impl<'a, PF: ProxFunction> EGT<'a, PF> {
         tau: f64,
     ) -> (Array1<f64>, Array1<f64>, f64) {
         let y_opt = self.pf2.conj_grad(self.game.mat_a_t.dot(x) / mu2);
-        let y_hat = (1.0 - tau) * y + tau * &y_opt;
-        let x_opt = self.pf1.conj_grad(self.game.mat_a.dot(&y_hat) / -mu1);
-        let y_tilde = self.pf2.projection(
-            y_opt,
-            self.game.mat_a_t.dot(&x_opt) * (-tau / ((1.0 - tau) * mu2)),
-        );
-        (
-            (1.0 - tau) * x + tau * &x_opt,
-            (1.0 - tau) * y + tau * &y_tilde,
-            (1.0 - tau) * mu2,
-        )
+        let x_opt = self
+            .pf1
+            .conj_grad(self.game.mat_a.dot(&((1.0 - tau) * y + tau * &y_opt)) / -mu1);
+        let x_nxt = (1.0 - tau) * x + tau * &x_opt;
+        let y_nxt = (1.0 - tau) * y
+            + tau
+                * self.pf2.projection(
+                    y_opt,
+                    self.game.mat_a_t.dot(&x_opt) * (-tau / ((1.0 - tau) * mu2)),
+                );
+        (x_nxt, y_nxt, (1.0 - tau) * mu2)
     }
     fn decrease_mu1(
         &self,

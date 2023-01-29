@@ -15,7 +15,7 @@ pub trait ProxFunction {
 pub struct Normal<'a> {
     sp: &'a StrategyPolytope,
     w: Array1<f64>,
-    c: Array1<f64>,
+    c: Array1<f64>, // the coefficient of `x\lnx`
     _center: Array1<f64>,
     min: f64,
 }
