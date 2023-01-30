@@ -32,7 +32,7 @@ fn accumulate(
 fn normalize(sp: &StrategyPolytope, regret: Array1<f64>) -> Array1<f64> {
     let mut x = regret;
     x[0] = 1.0;
-    for i in 0..(sp.idx.len() - 1) {
+    for i in 0..sp.par.len() {
         let l = sp.idx[i];
         let r = sp.idx[i + 1];
         let total: f64 = (l..r).map(|j| x[j]).sum();

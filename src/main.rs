@@ -1,4 +1,4 @@
-extern crate blas_src;
+// extern crate blas_src;
 
 use egt_on_efg::cfr::{cfr, cfr_plus};
 use egt_on_efg::egt::EGT;
