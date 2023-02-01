@@ -3,64 +3,63 @@ from __future__ import annotations
 import copy
 import json
 from collections import defaultdict
-from enum import IntEnum
-from typing import DefaultDict, Generic, Hashable, Optional, TypeVar
+from typing import DefaultDict, Generic, Optional
+
+from game import A, GameState, O, Player
 
 
-class Player(IntEnum):
-    P1 = 0
-    P2 = 1
-    C = 2
+class StrategySetBuilder:
+    def __init__(self, parent: list[Optional[tuple[int, int]]], n_actions: list[int]):
+        self.preorder: list[int] = []
+        self.sequence: dict[Optional[tuple[int, int]], int] = {}
+        self.par: list[int] = []
+        self.idx: list[int] = [1]
 
-    @staticmethod
-    def opponent(player: Player) -> Player:
-        assert player is not Player.C
-        if player is Player.P1:
-            return Player.P2
-        return Player.P1
+        self.edge: DefaultDict[Optional[tuple[int, int]], list[int]] = defaultdict(list)
+        for i, p in enumerate(parent):
+            self.edge[p].append(i)
 
+        def dfs(parent: Optional[tuple[int, int]], p: int):
+            self.sequence[parent] = p
+            for obs in self.edge[parent]:
+                self.preorder.append(obs)
+                self.par.append(p)
+                l = self.idx[-1]
+                n = n_actions[obs]
+                self.idx.append(l + n)
+                for i in range(n):
+                    dfs((obs, i), l + i)
 
-A = TypeVar("A", bound=Hashable)
-O = TypeVar("O", bound=Hashable)
-
-
-class GameState(Generic[A, O]):
-    def player(self) -> Optional[Player]:
-        raise NotImplementedError
-
-    def legal_actions(self) -> list[A]:
-        raise NotImplementedError
-
-    def step(self, action: A):
-        raise NotImplementedError
-
-    def prob(self, action: A) -> float:
-        # used only when self.player() == Player.C
-        raise NotImplementedError
-
-    def obs(self, player: Player) -> O:
-        # represents the information partition
-        raise NotImplementedError
-
-    def payoff(self) -> float:
-        # gain for Player.P1, loss for Player.P2
-        raise NotImplementedError
+        dfs(None, 0)
 
 
 class GameBuilder(Generic[A, O]):
     def __init__(self, state: GameState[A, O]):
-        self.par: tuple[list[int], list[int]] = ([], [])
-        self.idx: tuple[list[int], list[int]] = ([1], [1])
+        self.payoff_dict: DefaultDict[
+            tuple[Optional[tuple[int, int]], Optional[tuple[int, int]]], float
+        ] = defaultdict(float)
         self.obs: tuple[dict[O, int], dict[O, int]] = ({}, {})
+        self.obs_list: tuple[list[O], list[O]] = ([], [])
         self.action: tuple[list[list[A]], list[list[A]]] = ([], [])
-        self.payoff_dict: DefaultDict[tuple[int, int], float] = defaultdict(float)
-        self.build(state, 1.0, (0, 0))
+        self.parent: tuple[
+            list[Optional[tuple[int, int]]], list[Optional[tuple[int, int]]]
+        ] = ([], [])
+        self.build(state, 1.0, (None, None))
+
+        self.sp = (
+            StrategySetBuilder(
+                self.parent[0], list(map(lambda a: len(a), self.action[0]))
+            ),
+            StrategySetBuilder(
+                self.parent[1], list(map(lambda a: len(a), self.action[1]))
+            ),
+        )
 
     def build(
         self,
         state: GameState[A, O],
         prob: float,
-        parent: tuple[int, int],
+        parent: tuple[Optional[tuple[int, int]], Optional[tuple[int, int]]],
     ):
         player = state.player()
         if player is None:
@@ -74,14 +73,13 @@ class GameBuilder(Generic[A, O]):
                 self.build(s, prob * state.prob(action), parent)
             return
 
-        observation: O = state.obs(player)
+        observation: O = state.obs()
         if observation not in self.obs[player]:
             self.obs[player][observation] = len(self.obs[player])
+            self.obs_list[player].append(observation)
             legal_actions = state.legal_actions()
             self.action[player].append(legal_actions)
-            n = len(legal_actions)
-            self.par[player].append(parent[player])
-            self.idx[player].append(self.idx[player][-1] + n)
+            self.parent[player].append(parent[player])
 
         obs: int = self.obs[player][observation]
 
@@ -92,9 +90,7 @@ class GameBuilder(Generic[A, O]):
             self.build(
                 s,
                 prob,
-                (self.idx[0][obs] + i, parent[1])
-                if player is Player.P1
-                else (parent[0], self.idx[1][obs] + i),
+                ((obs, i), parent[1]) if player is Player.P1 else (parent[0], (obs, i)),
             )
 
 
@@ -108,8 +104,8 @@ def build(state: GameState[A, O]) -> str:
         data = []
         for key, val in tmp:
             r, c = key
-            row.append(r)
-            col.append(c)
+            row.append(game.sp[0].sequence[r])
+            col.append(game.sp[1].sequence[c])
             data.append(-val)
         return {
             "row": row,
@@ -117,14 +113,15 @@ def build(state: GameState[A, O]) -> str:
             "data": data,
         }
 
-    def sp(i: int):
-        tmp = sorted([(i, obs) for obs, i in game.obs[i].items()])
-        obs = [obs for i, obs in tmp]
+    def sp(player: int):
+        obs = [game.obs_list[player][i] for i in game.sp[player].preorder]
+        action = [game.action[player][i] for i in game.sp[player].preorder]
+
         return {
-            "par": game.par[i],
-            "idx": game.idx[i],
+            "par": game.sp[player].par,
+            "idx": game.sp[player].idx,
             "obs": obs,
-            "action": game.action[i],
+            "action": action,
         }
 
     obj = {

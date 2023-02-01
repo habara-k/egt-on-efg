@@ -74,6 +74,7 @@ fn main() {
         end.as_secs(),
         end.subsec_nanos() / 1_000_000
     );
+    dbg!(x.dot(&game.mat_a.dot(&y)));
 
     let now = Local::now().format("%Y%m%d-%H:%M").to_string();
     let dirname = format!("log/{}-{}-{}", now, cfg.game, cfg.method);

@@ -114,7 +114,9 @@ class LeducHoldem(GameState[Action, Obs]):
                 return 2 / (self.n_card * (2 * self.n_card - 1))
         assert False
 
-    def obs(self, player: Player) -> Obs:
+    def obs(self) -> Obs:
+        player = self.player()
+        assert player is not None
         assert player is not Player.C
         hole_card = self.history[0][player]
         return ",".join([hole_card, *self.history[1:]])

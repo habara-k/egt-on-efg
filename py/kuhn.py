@@ -56,7 +56,9 @@ class KuhnPoker(GameState[Action, Obs]):
         assert self.player() is Player.C
         return 1.0 / 6.0
 
-    def obs(self, player: Player) -> Obs:
+    def obs(self) -> Obs:
+        player = self.player()
+        assert player is not None
         assert player is not Player.C
         hole_card = self.history[0][player]
         return ",".join([hole_card, *self.history[1:]])
