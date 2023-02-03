@@ -53,7 +53,7 @@ class Goofspiel(GameState[Action, Obs]):
             self.payoff_sum += self.PRIZE[self.prize]
         elif self.RANK[self.p1_action] > self.RANK[action]:
             self.payoff_sum -= self.PRIZE[self.prize]
-        self.history.append(f"{self.prize}-{self.p1_action}-{action}")
+        self.history.append(f"{self.prize}{self.p1_action}{action}")
         self.prize = None
         self.p1_action = None
 
