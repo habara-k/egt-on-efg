@@ -1,6 +1,6 @@
 from typing import Optional
 
-from game_builder import GameState, Player
+from game import GameState, Player
 
 Action = str
 Obs = str
@@ -62,18 +62,17 @@ class KuhnPoker(GameState[Action, Obs]):
         assert player is not Player.C
         hole_card = self.history[0][player]
         return ",".join([hole_card, *self.history[1:]])
-        # return str((hole_card, self.history[1:]))
 
     def payoff(self) -> float:
         assert self.player() is None
         if self.history[-1] == "Fold":
             if len(self.history) % 2 == 0:
-                return -self.bet[0]
-            return self.bet[1]
+                return self.bet[0]
+            return -self.bet[1]
 
         assert self.bet[0] == self.bet[1]
         bet = self.bet[0]
         card1, card2 = list(self.history[0])
         if RANK[card1] > RANK[card2]:
-            return bet
-        return -bet
+            return -bet
+        return bet

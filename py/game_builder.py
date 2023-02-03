@@ -104,9 +104,11 @@ def build(state: GameState[A, O]) -> str:
         data = []
         for key, val in tmp:
             r, c = key
+            if val == 0.0:
+                continue
             row.append(game.sp[0].sequence[r])
             col.append(game.sp[1].sequence[c])
-            data.append(-val)
+            data.append(val)
         return {
             "row": row,
             "col": col,

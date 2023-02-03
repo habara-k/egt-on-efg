@@ -1,7 +1,6 @@
-import re
 from typing import Optional
 
-from game_builder import GameState, Player
+from game import GameState, Player
 
 Action = str
 Obs = str
@@ -125,19 +124,19 @@ class LeducHoldem(GameState[Action, Obs]):
         assert self.player() is None
         if self.history[-1] == "Fold":
             if self.last_player is Player.P1:
-                return -self.bet[0]
-            return self.bet[1]
+                return self.bet[0]
+            return -self.bet[1]
 
         assert self.bet[0] == self.bet[1]
         bet = self.bet[0]
 
         card1, card2 = list(self.history[0])
         if card1 == self.community_card:
-            return bet
+            return -bet
         if card2 == self.community_card:
-            return -bet
-        if card1 > card2:
             return bet
-        if card1 < card2:
+        if card1 > card2:
             return -bet
+        if card1 < card2:
+            return bet
         return 0

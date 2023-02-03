@@ -6,6 +6,7 @@ import numpy as np
 from fire import Fire  # type: ignore
 
 import game_builder
+from goofspiel import Goofspiel
 from kuhn import KuhnPoker
 from leduc import LeducHoldem
 
@@ -19,12 +20,17 @@ def game(key: str):
         return LeducHoldem(
             ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
         )
+    elif key == "goofspiel":
+        return Goofspiel()
     else:
         assert False, f"Invalid key: {key}"
 
 
 def build(key: str, path: str):
     with open(path, "w") as f:
+        # g = json.loads(game_builder.build(game(key)))
+        # print(f"{g['x']['idx'][-1]=}")
+        # print(f"{g['y']['idx'][-1]=}")
         f.write(game_builder.build(game(key)))
 
 

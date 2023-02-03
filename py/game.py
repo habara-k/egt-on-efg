@@ -27,13 +27,14 @@ class GameState(Generic[A, O]):
         raise NotImplementedError
 
     def legal_actions(self) -> list[A]:
+        # empty is not allowed
         raise NotImplementedError
 
     def step(self, action: A):
         raise NotImplementedError
 
     def prob(self, action: A) -> float:
-        # used only when self.player() == Player.C
+        # used only when self.player() == Player.C and action in self.legal_actions()
         raise NotImplementedError
 
     def obs(self) -> O:
@@ -41,7 +42,8 @@ class GameState(Generic[A, O]):
         raise NotImplementedError
 
     def payoff(self) -> float:
-        # gain for Player.P1, loss for Player.P2
+        # loss for Player.P1, gain for Player.P2
+        # used only when self.player() is None
         raise NotImplementedError
 
     def expected_value(
