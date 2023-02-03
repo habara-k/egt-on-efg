@@ -1,4 +1,3 @@
-import copy
 from typing import Optional
 
 from game import GameState, Player
@@ -17,7 +16,7 @@ class Goofspiel(GameState[Action, Obs]):
 
         self.history: list[str] = []
         self.prize: Optional[Card] = None
-        self.deck = [copy.deepcopy(self.CARDS) for _ in range(3)]
+        self.deck = [self.CARDS[:] for _ in range(3)]
         self.payoff_sum = 0
         self.p1_action: Optional[Action] = None
 

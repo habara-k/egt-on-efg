@@ -9,6 +9,7 @@ import game_builder
 from goofspiel import Goofspiel
 from kuhn import KuhnPoker
 from leduc import LeducHoldem
+from liars_dice import LiarsDice
 
 
 def game(key: str):
@@ -22,16 +23,19 @@ def game(key: str):
         )
     elif key == "goofspiel":
         return Goofspiel()
+    elif key == "liars_dice":
+        return LiarsDice()
     else:
         assert False, f"Invalid key: {key}"
 
 
 def build(key: str, path: str):
     with open(path, "w") as f:
-        # g = json.loads(game_builder.build(game(key)))
-        # print(f"{g['x']['idx'][-1]=}")
-        # print(f"{g['y']['idx'][-1]=}")
-        f.write(game_builder.build(game(key)))
+        g = json.loads(game_builder.build(game(key)))
+        print(f"{g['x']['idx'][-1]=}")
+        print(f"{g['y']['idx'][-1]=}")
+        f.write(json.dumps(g))
+        # f.write(game_builder.build(game(key)))
 
 
 def draw(path: str):

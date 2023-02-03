@@ -84,7 +84,7 @@ fn main() {
     writeln!(file, "{}", format!("{:?}", &error)).unwrap();
 
     let mut file = std::fs::File::create(format!("{}/x.json", &dirname)).unwrap();
-    writeln!(file, "{}", format!("{}", &x)).unwrap();
+    writeln!(file, "{}", serde_json::to_string(&x.to_vec()).unwrap()).unwrap();
     let mut file = std::fs::File::create(format!("{}/y.json", &dirname)).unwrap();
-    writeln!(file, "{}", format!("{}", &y)).unwrap();
+    writeln!(file, "{}", serde_json::to_string(&y.to_vec()).unwrap()).unwrap();
 }
